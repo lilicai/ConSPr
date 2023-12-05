@@ -43,11 +43,11 @@ The dbSNP file can be download from:ftp:/gsapubftp-anonymous@ftp.broadinstitute.
 * python 3.8.8 or higher
 * numpy 1.7.0 or higher 
 * scipy 0.14.0 or higher 
-*pandas 1.2.4 or higher
-*GATK 3.7
-*GATK 4.1.9.0 or higher  
-*java 1.8.0_202 or higher
-*conpair  [https://github.com/nygenome/Conpair]
+* pandas 1.2.4 or higher
+* GATK 3.7
+* GATK 4.1.9.0 or higher  
+* java 1.8.0_202 or higher
+* conpair  [https://github.com/nygenome/Conpair]
 
 **Modify Configuration file:**
 ```
@@ -105,17 +105,17 @@ Optional:
 
 **Contamination**  
 ```
-An example of a contamination file can be viewed here: ([`contamination.txt`](${ConSPr}/example/sample1/sample1/Pair/Contamina/Conpair/sample1_contamination.stat.xls)). 
+An example of a contamination file can be viewed here: ([`contamination.stat.xls`](${ConSPr}/example/sample1/sample1/Pair/Contamina/Conpair/sample1_contamination.stat.xls)). 
 ```
 
 **Contamination Genotype**
 ```
-An example of a genetype file can be viewed here: ([`contamination.txt`](ConSPr/example/sample1/sample1/Pair/Genotype/sample1.sample.pollution.change.genetype.xls)).
+An example of a genetype file can be viewed here: ([`pollution.change.genetype.xls`](ConSPr/example/sample1/sample1/Pair/Genotype/sample1.sample.pollution.change.genetype.xls)).
 ```
 
 **Contamination Source**
 ```
-An example of a pollution sample source file can be viewed here: ([`contamination.txt`](ConSPr/example/sample1/source/sample.pollotion.source_result.xls)).
+An example of a pollution sample source file can be viewed here: ([`pollution.source_result.xls`](ConSPr/example/sample1/source/sample.pollotion.source_result.xls)).
 ```
 
 
