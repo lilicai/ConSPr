@@ -1,0 +1,6 @@
+	pollution_smaple1	pollution_sample2	pollution_sample3
+Same_Genetype_Nums	31	23	76
+Diff_Genetype_Nums	45	53	0
+All_Site_Nums	76	76	76
+Consistency_Percent	0.41	0.3	1
+Pollution_Flag	Flase	Flase	TRUE

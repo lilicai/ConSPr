@@ -1,0 +1,53 @@
+DIR=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
+BIN=$(DIR)
+
+include $(CONFIG)
+
+HELP:
+	@echo Description:
+	@echo Usage:
+	@echo make -f makefile_Genotype CONFIG=*
+	@echo Note:Pipeline of Call Predicting pollution source genotypes
+	@echo "*******************************************************"
+	@echo Source:Chosenmed
+	@echo Editor:Chosenmed
+	@echo date:2023-10-19
+	@echo "*******************************************************"
+
+Out_Dir=$(outdir)
+PREFIX=$(sample_id)
+Out_Prefix=$(Out_Dir)/$(PREFIX)
+bam=$(bam)
+
+GERMLINE:CallGermline GATK_HAPLOTYPECALLER_VCF_FILTRE GERMLINE_ANNO
+
+CallGermline:
+	@echo CallGermline start at `date`
+	mkdir -p $(Out_Prefix)/Germline/tmp
+	$(GATK4) --java-options "-XX:ParallelGCThreads=20 -Xmx20G -Djava.io.tmpdir=$(Out_Prefix)/Germline/tmp/" HaplotypeCaller -L $(realign_autoChr) -R $(ref) -I $(bam) -ploidy 2 -ERC GVCF -O $(Out_Prefix)/Germline/$(PREFIX).g.vcf
+	@echo CallGermline end at `date`
+
+GATK_HAPLOTYPECALLER_VCF_FILTRE:
+	@echo FilterGermline start at `date`
+	mkdir -p $(Out_Prefix)/Germline/tmp
+	$(GATK4) --java-options "-XX:ParallelGCThreads=20 -Xmx20G -Djava.io.tmpdir=$(Out_Prefix)/Germline/tmp/" GenotypeGVCFs -R $(ref) -V $(Out_Prefix)/Germline/$(PREFIX).g.vcf --dbsnp $(dbsnp) $(haplotype_filter_cmd) -O $(Out_Prefix)/Germline/$(PREFIX).raw.vcf
+	$(GATK4) --java-options "-XX:ParallelGCThreads=20 -Xmx20G -Djava.io.tmpdir=$(Out_Prefix)/Germline/tmp/" SelectVariants -R $(ref) -V $(Out_Prefix)/Germline/$(PREFIX).raw.vcf -select-type SNP -O $(Out_Prefix)/Germline/$(PREFIX).raw.SNP.vcf
+	$(GATK4) --java-options "-XX:ParallelGCThreads=20 -Xmx20G -Djava.io.tmpdir=$(Out_Prefix)/Germline/tmp/" VariantFiltration $(haplotype_snv_filter_cmd) -V $(Out_Prefix)/Germline/$(PREFIX).raw.SNP.vcf -O $(Out_Prefix)/Germline/$(PREFIX).raw.SNP.filter.vcf
+	$(GATK4) --java-options "-XX:ParallelGCThreads=20 -Xmx20G -Djava.io.tmpdir=$(Out_Prefix)/Germline/tmp/" SelectVariants -R $(ref) -V $(Out_Prefix)/Germline/$(PREFIX).raw.vcf -select-type INDEL -O $(Out_Prefix)/Germline/$(PREFIX).raw.InDel.vcf
+	$(GATK4) --java-options "-XX:ParallelGCThreads=20 -Xmx20G -Djava.io.tmpdir=$(Out_Prefix)/Germline/tmp/" VariantFiltration $(haplotype_indel_filter_cmd) -V $(Out_Prefix)/Germline/$(PREFIX).raw.InDel.vcf -O $(Out_Prefix)/Germline/$(PREFIX).raw.InDel.filter.vcf
+	$(GATK4) --java-options "-XX:ParallelGCThreads=20 -Xmx20G -Djava.io.tmpdir=$(Out_Prefix)/Germline/tmp/" SelectVariants -R $(ref) -V $(Out_Prefix)/Germline/$(PREFIX).raw.vcf -select-type MNP -O $(Out_Prefix)/Germline/$(PREFIX).raw.MNP.vcf
+	$(GATK4) --java-options "-XX:ParallelGCThreads=20 -Xmx20G -Djava.io.tmpdir=$(Out_Prefix)/Germline/tmp/" VariantFiltration $(haplotype_mnv_filter_cmd) -V $(Out_Prefix)/Germline/$(PREFIX).raw.MNP.vcf -O $(Out_Prefix)/Germline/$(PREFIX).raw.MNP.filter.vcf
+	cp $(Out_Prefix)/Germline/$(PREFIX).raw.SNP.filter.vcf $(Out_Prefix)/Germline/$(PREFIX).raw.filter.vcf
+	cat $(Out_Prefix)/Germline/$(PREFIX).raw.InDel.filter.vcf |awk '$$0 !~/^#/' >> $(Out_Prefix)/Germline/$(PREFIX).raw.filter.vcf
+	cat $(Out_Prefix)/Germline/$(PREFIX).raw.MNP.filter.vcf |awk '$$0 !~/^#/' >> $(Out_Prefix)/Germline/$(PREFIX).raw.filter.vcf
+	$(PYTHON3) $(BIN)/Germline/gatkHaptcVcfSplit.py -vcf $(Out_Prefix)/Germline/$(PREFIX).raw.filter.vcf -out $(Out_Prefix)/Germline/$(PREFIX).raw.filter.split.vcf
+	cat $(Out_Prefix)/Germline/$(PREFIX).raw.filter.split.vcf | awk -F'\t' '$$0 ~/^#/ || $$7 == "PASS"' >$(Out_Prefix)/Germline/$(PREFIX).raw.filter.PASS.vcf	
+	@echo FilterGermline end at `date`
+
+GERMLINE_ANNO:
+	@echo Germline  Annot and Filter start at `date`
+	mkdir -p $(Out_Prefix)/Germline/Annot
+	cp $(Out_Prefix)/Germline/$(PREFIX).raw.filter.PASS.vcf $(Out_Prefix)/Germline/Annot/$(PREFIX).raw.filter.PASS.vcf
+	$(PYTHON3) $(BIN)/Annot/annotFilterGermline.py -s $(PREFIX) -vcf $(Out_Prefix)/Germline/Annot/$(PREFIX).raw.filter.PASS.vcf
+	@echo Germline  Annot and Filter end at `date`
+

@@ -1,0 +1,39 @@
+[Job Start]
+Name	GERMLINE
+Memory	20G
+Queue	fat.q
+CPU	10
+Major	T
+Thread	6
+Qsub	False
+Order	1
+Command	make -f BIN/Germline/makefile_Germline sample_id=$(sample)[0]_T bam=$(sample)[1] CONFIG=BIN/Config_Contamination outdir=OUTDIR/$(sample)[0] GERMLINE
+Command	make -f BIN/Germline/makefile_Germline sample_id=$(sample)[0]_N bam=$(sample)[2] CONFIG=BIN/Config_Contamination outdir=OUTDIR/$(sample)[0] GERMLINE
+[Job End]
+
+[Job Start]
+Name	Contamination
+Memory	20G
+Queue	fat.q
+CPU	10
+Major	T
+Thread	6
+Depend	GERMLINE
+Qsub	False
+Order	2
+Command	make -f BIN/Contamination/makefile_Contamination Bam_T=$(sample)[1] Bam_N=$(sample)[2] outdir=OUTDIR/$(sample)[0] sample_id=$(sample)[0] CONFIG=BIN/Config_Contamination Conpair
+[Job End]
+
+[Job Start]
+Name	Genotype
+Memory	20G
+Queue	fat.q
+CPU	10
+Major	T
+Thread	6
+Depend	Contamination
+Qsub	False
+Order	3
+Command	make -f BIN/Genotype/makefile_Genotype sample_id=$(sample)[0] CONFIG=BIN/Config_Contamination outdir=OUTDIR/$(sample)[0] sex=MALE POLLUTION_GENOTYPE
+[Job End]
+

@@ -1,0 +1,25 @@
+DIR=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
+BIN=$(DIR)
+
+include $(CONFIG)
+
+HELP:
+	@echo Description:
+	@echo Usage:
+	@echo make -f makefile_Genotype CONFIG=*
+	@echo Note:Pipeline of Call Predicting pollution source genotypes
+	@echo "*******************************************************"
+	@echo Source:Chosenmed
+	@echo Editor:Chosenmed
+	@echo date:2023-10-19
+	@echo "*******************************************************"
+
+Out_Dir=$(outdir)
+PREFIX=$(sample_id)
+Out_Prefix=$(Out_Dir)/$(PREFIX)
+
+POLLUTION_GENOTYPE:
+	@echo Pullution  genotype predict start at `date`
+	mkdir -p $(outdir)/Pair/Genotype
+	$(PYTHON3) $(BIN)/GetGenotype/getGenotype.py --baseline $(baseline) -p $(PREFIX) -t $(outdir)/$(PREFIX)_T/Germline/Annot/$(PREFIX)_T.Germline.All.Annot.xls -n $(outdir)/$(PREFIX)_N/Germline/Annot/$(PREFIX)_N.Germline.All.Annot.xls -cf $(outdir)/Pair/Contamina/Conpair/$(PREFIX).contamination.stat.xls --outdir $(outdir)/Pair/Genotype $(pollution_genetype_filter)
+	@echo Pullution  genotype predict end at `date`

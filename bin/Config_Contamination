@@ -1,0 +1,99 @@
+###software
+PERL		= /software/perl/perl-v5.28.1/bin/perl
+PYTHON		= /software/python2/Python-v2.7.9/bin/python
+#PYTHON3		= /data/Pipeline/liaorui/software/python3/Python-v-3.7.0/bin/python3
+PYTHON3		= /home/cailili/anaconda3/bin/python3
+RECRIPR		= /software/R/R-v3.5.2/bin/Rscript
+RECRIPR_LX	= /home/lengxue/.conda/envs/absolute/bin/Rscript
+R		= /software/R/R-v3.5.2/bin/R
+CONVERT		= /software/ImageMagick/ImageMagick6-v6.9.10-27/bin/convert
+svg2xxx		= /share/nas2/genome/biosoft/svg2xxx/v1.0/svg2xxx
+SAMTOOLS	= /software/samtools/samtools-1.9/samtools
+BEDTOOLS	= /software/bedtools/bedtools2/bin/bedtools
+BAMTOOLS	= /software/bamtools/bamtools-2.5.0/build/src/toolkit/bamtools
+bcftools	= /software/Bcftools/bcftools-1.4/bcftools
+JAVA		= /software/java/jdk1.8.0_202/bin/java
+
+### Call Somatic SNV
+gatk		= /software/gatk/3.7/GenomeAnalysisTK.jar
+GATK4           = /data2/IVD/IVD_digestion/Pipeline/Conf/GATK4/gatk-4.1.9.0/gatk
+
+### Annotation : move to annot.ini file
+ANNOVAR			= /data2/IVD/IVD_digestion/Pipeline/Conf/Annovar/Annovar_20191024
+annovar_humandb	= /data2/IVD/IVD_digestion/Pipeline/Conf/Annovar/Annovar_20191024/humandb
+SNPEFF			= /software/java/jdk1.8.0_202/bin/java -Xmx40g -jar /software/SnpEff/4.3/snpEff/snpEff.jar
+SNPEFF_config		= /software/SnpEff/4.3/snpEff/snpEff.config
+vep_env			= export PERL5LIB=/software/Vep/src/ensembl/modules:/software/Vep/VEP_plugins-release-96:/software/Vep/src/ensembl-io/modules:/software/Vep/src/ensembl-variation/modules:/software/Vep/src/ensembl-funcgen/modules:/software/Vep/src/ensembl-compara/modules:$${PERL5LIB}
+
+### Contamination
+conpair = /data2/Project/lengxue/script/commercial/blood/tools/Conpair
+verifyBamID  = /home/cailili/anaconda3/share/verifybamid2-2.0.1-0/VerifyBamID
+verifyBamID_db = /sds2/YanFa/Project/Project_20230902_contamination/resource/1000g.phase3.100k.b37.vcf.gz.dat
+contEst_db =  /sds2/YanFa/Project/Project_20230902_contamination/hapmap_3.3_b37_pop_stratified_af.vcf
+vanquish = /sds2/YanFa/Project/Project_20231017_contamination_software_test/vanquish.r
+ART-DeCo_database = /sds2/YanFa/SampleContamination/Project_20230602_cll/Script/Conf/GRCh37.autosomes.phase3_shapeit2_mvncall_integrated.20130502.SNV.genotype.sselect_v4_MAF_0.4_LD_0.8.bed
+
+###database
+genefuse_database	= /data2/IVD/IVD_digestion/Pipeline/Conf/GeneFuse/genes/cancer.hg19.csv
+ref			= /data2/IVD/IVD_digestion/Pipeline/Conf/Genome/hg19/bwa_index/ucsc.hg19.fasta
+ref_fai			= /data2/IVD/IVD_digestion/Pipeline/Conf/Genome/hg19/bwa_index/ucsc.hg19.fasta.fai
+ref_dict		= /data2/IVD/IVD_digestion/Pipeline/Conf/Genome/hg19/bwa_index/ucsc.hg19.dict
+ref_2bit		= /data2/IVD/IVD_digestion/Pipeline/Conf/Genome/hg19/ucsc.hg19.fasta.2bit
+
+
+### 599 tissue
+Para_hg_region		= /data2/IVD/IVD_digestion/Pipeline/Conf/Bed/panel599/panel_599_62.bed
+Para_hg_region_ctDNA    = /data2/IVD/IVD_digestion/Pipeline/Conf/Bed/panel599_Ct/ctPanel_Covere.bed
+gene_list_599		= /sds2/YanFa/SampleContamination/Project_20230602_cll/Script/Conf/Twist1123.genelist
+MuTect2_PoN_599		= /data2/IVD/IVD_digestion/Pipeline/Conf/Gatk_bundles/poN/599gene_18sample.PoN.vcf.gz
+normal_cnv_stat_599	= /data2/IVD/IVD_digestion/Pipeline/Conf/ONCOCNV/control_bam_599/599gene.CNV.Control.stats.txt
+normal_cnv_stat_27	= /data2/IVD/IVD_digestion/Pipeline/Conf/ONCOCNV/control_bam_27/27gene.CNV.Control.stats.txt
+realign_599		= /sds2/YanFa/SampleContamination/Project_20230602_cll/Script/Conf/align.bed
+realign_599_FEMALE	= /data2/IVD/IVD_digestion/Pipeline/Conf/conf/align_female.bed
+realign_autoChr		= /sds2/YanFa/SampleContamination/Project_20230602_cll/Script/Conf/autoChr.bed
+realign_chrX		= /sds2/YanFa/SampleContamination/Project_20230602_cll/Script/Conf/chrX.bed
+realign_chrY		= /sds2/YanFa/SampleContamination/Project_20230602_cll/Script/Conf/chrY.bed
+known_indel		= /data2/IVD/IVD_digestion/Pipeline/Conf/Gatk_bundles/1000G_phase1.indels.hg19.vcf
+Pindel_region		= /data2/IVD/IVD_digestion/Pipeline/Conf/Bed/ivd/EGFR19EXON.bed
+Conpair_vcf		= /data2/IVD/IVD_digestion/Pipeline/Conf/Conpair/data/markers/GRCh37.autosomes.phase3_shapeit2_mvncall_integrated.20130502.SNV.genotype.sselect_v4_MAF_0.4_LD_0.8.vcf
+
+cal_contamination	= /data2/IVD/IVD_digestion/Pipeline/Conf/Gatk_bundles/af-only-gnomad.raw.sites.hg19.vcf
+dbsnp			= /data2/IVD/IVD_digestion/Pipeline/Conf/Gatk_bundles/dbsnp_138.hg19.vcf
+germline_source		= /data2/IVD/IVD_digestion/Pipeline/Conf/Gatk_bundles/af-only-gnomad.raw.sites.hg19.vcf
+hapmap			= /data2/IVD/IVD_digestion/Pipeline/Conf/Gatk_bundles/hapmap_3.3.hg19.sites.vcf
+omni			= /data2/IVD/IVD_digestion/Pipeline/Conf/Gatk_bundles/1000G_omni2.5.hg19.sites.vcf
+oneG			= /data2/IVD/IVD_digestion/Pipeline/Conf/Gatk_bundles/1000G_phase1.snps.high_confidence.hg19.sites.vcf
+mills_gold		= /data2/IVD/IVD_digestion/Pipeline/Conf/Gatk_bundles/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf
+
+drug1			= /data2/IVD/IVD_digestion/Pipeline/Conf/Drug/Final_Drugbank_results_human.xls
+KnowDriver		= /data2/IVD/IVD_digestion/Pipeline/Conf/TMB/KnownDriver_Fusion.GeneList
+FoundationOne		= /data2/IVD/IVD_digestion/Pipeline/Conf/TMB/FoundationOne.GeneList
+TMBconfig		= /data2/IVD/IVD_digestion/Pipeline/Conf/TMB/Tumoronly//config.ini
+hg19_gff		= /data2/IVD/IVD_digestion/Pipeline/Conf/Genome/hg19/gff/gencode.v30lift37.annotation.gff3
+genefusion_file		= /data2/IVD/IVD_digestion/Pipeline/Conf/GeneFuse/genes/cancer.hg19.csv
+trans			= /sds2/YanFa/SampleContamination/Project_20230602_cll/Script/Conf/all_canonical_trans.txt
+hg19_region		= /data2/IVD/IVD_digestion/Pipeline/Conf/Annovar/humandb/hg19_refGene_region.txt
+
+baseline		= /sds2/YanFa/SampleContamination/Project_20230602_cll/Script/Conf/compair.vcf
+
+##germline_filter
+haplotype_filter_cmd		= -stand-call-conf 50.0
+haplotype_snv_filter_cmd	= -filter "DP < 50 " --filter-name "LowDepth" -filter "QD < 2.0 || FS > 60.0 || MQ < 40.0 || MQRankSum < -12.5 || SOR > 3.0 || ReadPosRankSum < -8.0" --filter-name "snp_hard_filter"
+haplotype_indel_filter_cmd	= -filter "DP < 50 " --filter-name "LowDepth" -filter "QD < 2.0 || FS > 200.0 || ReadPosRankSum < -20.0" --filter-name "indel_hard_filter"
+haplotype_mnv_filter_cmd	= -filter "DP < 50 " --filter-name "LowDepth" -filter "QD < 2.0 || FS > 60.0 || MQ < 40.0 || MQRankSum < -12.5 || SOR > 3.0 || ReadPosRankSum < -8.0" --filter-name "snp_hard_filter"
+
+##annovar
+annovar_cmd		= -buildver hg19 --otherinfo -vcfinput -protocol refGene,cytoBand,avsnp150,snp138,common_snp,clinvar_20190305,cosmic88_coding,cosmic_hotspots,1000g2015aug_all,1000g2015aug_eas,1000g2015aug_sas,1000g2015aug_afr,1000g2015aug_amr,1000g2015aug_eur,exac03,gnomad211_genome,gnomad211_exome,esp6500siv2_all,cadd13gt20,gerp++gt2,ljb26_all,intervar_20180118,wgRna,targetScanS,gwasCatalog,rmsk -operation g,r,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,r,r,r,r -nastring . -polish --remove --thread 10
+annovar_cmd_tumoronly	= -buildver hg19 -protocol refGene,cytoBand,cosmic88_noncoding,targetScanS,gwasCatalog,1000g2015aug_all,avsnp150,snp138,clinvar_20190305,cosmic88_coding,esp6500siv2_all,ljb26_all,exac03,exac03nonpsych,1000g2015aug_eas,1000g2015aug_sas,1000g2015aug_afr,1000g2015aug_amr,1000g2015aug_eur,intervar_20180118,gnomad211_genome,gnomad211_exome,rmsk,wgRna,common_snp,cosmic_hotspots,cadd13gt20,gerp++gt2  -operation g,r,f,r,r,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,r,r,f,f,f,f -nastring . --otherinfo -vcfinput --remove -polish --thread 10
+snpeff_cmd		= -strict -noInteraction -noMotif -onlyProtein
+vep_pram_cmd		= /software/Vep/ensembl-vep-release-96/vep --cache --offline --everything --dir /software/Vep/cache --refseq --port 3337 --fasta /software/Vep/fasta/Homo_sapiens.GRCh37.dna.toplevel.fa --fork 4 --force_overwrite --no_stats --pick
+
+##Germline
+germline_filter_cmd	= -d 50 -ad 5 -f 0.1 -m 0.01
+anno_software_list	= Annovar Vep SnpEff
+
+##Contamination filter
+conpair_contamination_filter = --fh 99 --fl 80 --fn 10 --ft 0.5 --fs 100
+verifybamid_contamination_filter = --fn 0.5 --ft 0.5
+contest_contamination_filter = --ft 0.5
+pollution_genetype_filter = --consistencyCutoff 0.6 --UpdHomoCutoff 0.1 --UpdHetCutoff 0.7 --cutoff 30

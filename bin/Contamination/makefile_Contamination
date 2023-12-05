@@ -1,0 +1,144 @@
+DIR=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
+BIN=$(DIR)
+
+include $(CONFIG)
+
+HELP:
+	@echo Description:
+	@echo Usage:
+	@echo make -f makefile_Contamination CONFIG=*
+	@echo Note:Pipeline of Test Sample Contamination
+	@echo "*******************************************************"
+	@echo Source:Chosenmed
+	@echo Editor:Chosenmed
+	@echo date:2023-10-16
+	@echo "*******************************************************"
+
+Out_Dir=$(outdir)
+Bam_T=$(Bam_T)
+Bam_N=$(Bam_N)
+PREFIX=$(sample_id)
+
+ALL:Conpair VerifyBamID ContEst Vanquish ART-DeCo MergeContamina
+
+Conpair:
+	@echo Conpair start at `date`
+	#mkdir -p $(Out_Dir)/Pair/Somatic/01MuTect2/contamina
+	mkdir -p $(Out_Dir)/Pair/Contamina/Conpair/tmp
+	$(PYTHON3) $(conpair)/scripts/run_gatk_pileup_for_sample.py -G $(gatk) -B $(Bam_N) -O $(Out_Dir)/Pair/Contamina/Conpair/$(PREFIX)_N_pileup -D $(conpair) -R $(ref)
+	$(PYTHON3) $(conpair)/scripts/run_gatk_pileup_for_sample.py -G $(gatk) -B $(Bam_T) -O $(Out_Dir)/Pair/Contamina/Conpair/$(PREFIX)_T_pileup -D $(conpair) -R $(ref)
+	#export PYTHONPATH=$(Conpair)/modules/:$$PYTHONPATH
+	#export CONPAIR_DIR=$(Conpair)
+	$(PYTHON3) $(conpair)/scripts/verify_concordance.py -T $(Out_Dir)/Pair/Contamina/Conpair/$(PREFIX)_T_pileup  -N $(Out_Dir)/Pair/Contamina/Conpair/$(PREFIX)_N_pileup  -O $(Out_Dir)/Pair/Contamina/Conpair/$(PREFIX)_N_T_concordance.xls
+	$(PYTHON3) $(conpair)/scripts/estimate_tumor_normal_contamination.py -T $(Out_Dir)/Pair/Contamina/Conpair/$(PREFIX)_T_pileup  -N $(Out_Dir)/Pair/Contamina/Conpair/$(PREFIX)_N_pileup  -O $(Out_Dir)/Pair/Contamina/Conpair/$(PREFIX)_N_T_contamination.xls  -D $(conpair)
+	$(PYTHON3) $(BIN)/Conpair/ConpairStat.py --concordance  $(Out_Dir)/Pair/Contamina/Conpair/$(PREFIX)_N_T_concordance.xls --contamination $(Out_Dir)/Pair/Contamina/Conpair/$(PREFIX)_N_T_contamination.xls -o $(Out_Dir)/Pair/Contamina/Conpair/$(PREFIX).contamination.stat.xls -p $(PREFIX) $(conpair_contamination_filter)
+	@echo Conpair contamina end at `date`
+
+
+VerifyBamID:
+	@echo VerifyBamID contamina start at `date`
+	mkdir -p $(Out_Dir)/Pair/Contamina/VerifyBamID
+	$(verifyBamID) --SVDPrefix $(verifyBamID_db) --Reference $(ref) --BamFile $(Bam_T) --Output $(Out_Dir)/Pair/Contamina/VerifyBamID/$(PREFIX)_T
+	#$(verifyBamID) --SVDPrefix $(verifyBamID_db) --Reference $(ref) --BamFile $(Bam_N) --Output $(Out_Dir)/Pair/Contamina/VerifyBamID/$(PREFIX)_N
+	#$(PYTHON3) $(BIN)/VerifyBamID/VerifyBamIDStat.py --contamination_tumor $(Out_Dir)/Pair/Contamina/VerifyBamID/$(PREFIX)_T.selfSM --contamination_normal $(Out_Dir)/Pair/Contamina/VerifyBamID/$(PREFIX)_N.selfSM -o  $(Out_Dir)/Pair/Contamina/VerifyBamID/$(PREFIX).contamination.stat.xls -p $(PREFIX) $(verifybamid_contamination_filter)
+	@echo VerifyBamID contamina end `date`
+
+ContEst:
+	@echo ContEst contamina start at `date`
+	mkdir -p $(Out_Dir)/Pair/Contamina/ContEst
+	$(JAVA) -jar $(gatk) -T ContEst -R $(ref) -I:eval $(Bam_T) -I:genotype $(Bam_N) --popfile $(contEst_db) -isr INTERSECTION -o $(Out_Dir)/Pair/Contamina/ContEst/$(PREFIX).output.xls
+	$(PYTHON3) $(BIN)/ContEst/ContESTStat.py --contamination $(Out_Dir)/Pair/Contamina/ContEst/$(PREFIX).output.xls -o $(Out_Dir)/Pair/Contamina/ContEst/$(PREFIX).contamination.stat.xls -p $(PREFIX) $(contest_contamination_filter)
+	@echo ContEst contamina end at `date`
+
+Vanquish:
+	@echo Vanquish contamina start at `date`
+	mkdir -p $(Out_Dir)/Pair/Contamina/Vanquish
+	$(RECRIPR_LX) $(vanquish) $(Out_Dir)/$(PREFIX)_T/Germline/$(PREFIX)_T.raw.filter.PASS.vcf $(Out_Dir)/Pair/Contamina/Vanquish/$(PREFIX)_T
+	#$(RECRIPR_LX) $(vanquish) $(Out_Dir)/$(PREFIX)_N/Germline/$(PREFIX)_N.raw.filter.PASS.vcf $(Out_Dir)/Pair/Contamina/Vanquish/$(PREFIX)_N
+	@echo Vanquish contamina end at `date`
+
+ART-DeCo:
+	@echo ART-DeCo contamina start at `date`
+	mkdir -p $(Out_Dir)/Pair/Contamina/ART-DeCo/tmp
+	$(GATK4) --java-options "-XX:ParallelGCThreads=20 -Xmx20G -Djava.io.tmpdir=$(Out_Dir)/Pair/Contamina/ART-DeCo/tmp" DepthOfCoverage --input $(Bam_T) -L $(ART-DeCo_database) -O $(Out_Dir)/Pair/Contamina/ART-DeCo/$(PREFIX)_T.coverage.xls --create-output-variant-index -R $(ref) --output-format TABLE --print-base-counts --QUIET
+	sed -i 1d $(Out_Dir)/Pair/Contamina/ART-DeCo/$(PREFIX)_T.coverage.xls
+	cut -f 1,5 $(Out_Dir)/Pair/Contamina/ART-DeCo/$(PREFIX)_T.coverage.xls |awk -F ' ' '{print $$1"\t"$$2" "$$3" "$$4" "$$5}' >$(Out_Dir)/Pair/Contamina/ART-DeCo/$(PREFIX)_T.cov.xls
+	#$(GATK4) --java-options "-XX:ParallelGCThreads=20 -Xmx20G -Djava.io.tmpdir=$(Out_Dir)/Pair/Contamina/ART-DeCo/tmp" DepthOfCoverage --input $(Bam_N) -L $(ART-DeCo_database) -O $(Out_Dir)/Pair/Contamina/ART-DeCo/$(PREFIX)_N.coverage.xls --create-output-variant-index -R $(ref) --output-format TABLE --print-base-counts --QUIET
+	#sed -i 1d $(Out_Dir)/Pair/Contamina/ART-DeCo/$(PREFIX)_N.coverage.xls
+	#cut -f 1,5 $(Out_Dir)/Pair/Contamina/ART-DeCo/$(PREFIX)_N.coverage.xls |awk -F ' ' '{print $$1"\t"$$2" "$$3" "$$4" "$$5}' >$(Out_Dir)/Pair/Contamina/ART-DeCo/$(PREFIX)_N.cov.xls
+	@echo ART-DeCo end start at `date`
+
+
+MergeContamina:
+	@echo MergeContamina start at `date`
+	mkdir -p $(Out_Dir)/Pair/Contamina/04MergeContamina
+	
+	@echo MergeContamina end at `date`
+
+
+SOMATIC_TUMORONLY:Pindel_Tumoronly VARdict_Tumoronly GATKMutect_Tumoronly Varscan_Tumoronly SomaticMergevcf_Tumoronly
+Out_Prefix=$(Out_Dir)/$(PREFIX)
+Somatic_Out_Prefix=$(Out_Dir)/$(PREFIX)/Somatic/
+Ref=$(ref)
+
+###20200611 done
+Pindel_Tumoronly:
+	@echo Pindel start at `date`
+	mkdir -p $(Out_Prefix)/Somatic/Pindel/
+	echo -e "$(Out_Dir)/$(PREFIX)/Realign/$(PREFIX).recal.bam\t200\t$(PREFIX)" > $(Out_Prefix)/Somatic/Pindel/$(PREFIX).bam.list
+	$(Pindelbin)/pindel -f $(Ref) -i $(Out_Prefix)/Somatic/Pindel/$(PREFIX).bam.list -o $(Out_Prefix)/Somatic/Pindel/$(PREFIX) -j $(Pindel_region)
+	$(Pindelbin)/pindel2vcf $(para_Pindel) -r $(Ref) -P $(Out_Prefix)/Somatic/Pindel/$(PREFIX) -v $(Out_Prefix)/Somatic/Pindel/$(PREFIX).Pindel.raw.vcf -G $(gatk)
+	@echo Pindel end at `date`
+
+###20200611 done
+VARdict_Tumoronly:
+	@echo VARdict TumorOnly start at `date`
+	mkdir -p $(Out_Prefix)/Somatic/Vardict/
+	$(VARDICT)/VarDict $(vardict_single_cmd) -N $(PREFIX) -b $(Out_Dir)/$(PREFIX)/Realign/$(PREFIX).recal.bam -G $(Ref) $(realign_599) | $(RECRIPR) $(VARDICT)/teststrandbias.R | $(PERL) $(VARDICT)/var2vcf_valid.pl -N $(PREFIX) $(vardict_single_var2vcf_cmd) > $(Out_Prefix)/Somatic/Vardict/$(PREFIX).VarDict.raw.vcf
+	@echo VARdict TumorOnly end at `date`
+
+###20200611 done
+tmp_Lib=$(Out_Prefix)/Somatic/Mutect/tmp/
+GATKMutect_Tumoronly:
+	@echo Mutect TumorOnly start at `date`
+	mkdir -p $(Out_Prefix)/Somatic/Mutect/
+	mkdir -p $(tmp_Lib)
+	$(GATK4) --java-options "-XX:ParallelGCThreads=8 -Xmx20G -Djava.io.tmpdir=$(tmp_Lib)" GetPileupSummaries -I $(Out_Dir)/$(PREFIX)/Realign/$(PREFIX).recal.bam -L $(realign_599) -R $(Ref) -V $(cal_contamination) -O $(Out_Dir)/$(PREFIX)/Somatic/Mutect/$(PREFIX).pileups.table
+	$(GATK4) --java-options "-XX:ParallelGCThreads=8 -Xmx20G -Djava.io.tmpdir=$(tmp_Lib)" CalculateContamination -I $(Out_Dir)/$(PREFIX)/Somatic/Mutect/$(PREFIX).pileups.table -O $(Out_Dir)/$(PREFIX)/Somatic/Mutect/$(PREFIX).contamination.table --tumor-segmentation $(Out_Dir)/$(PREFIX)/Somatic/Mutect/$(PREFIX).Tumor.segments.table
+	#$(PYTHON3) $(BIN)/Tumoronly_contamination_calculate.py -i $(Out_Dir)/$(PREFIX)/Somatic/Mutect/ -o $(Out_Dir)/$(PREFIX)/Somatic/Mutect/$(PREFIX).contamination.level.xls
+	$(GATK4) --java-options "-XX:ParallelGCThreads=8 -Xmx20G -Djava.io.tmpdir=$(tmp_Lib)" Mutect2 $(normal_pon) --germline-resource $(germline_source)  -L $(realign_599) $(mutect2_single_cmd) -I $(Out_Dir)/$(PREFIX)/Realign/$(PREFIX).recal.bam  -tumor $(PREFIX) -R $(Ref) -O $(Out_Dir)/$(PREFIX)/Somatic/Mutect/$(PREFIX).raw.vcf --bam-output $(Out_Dir)/$(PREFIX)/Somatic/Mutect/$(PREFIX).Mutect.bam --f1r2-tar-gz $(Out_Dir)/$(PREFIX)/Somatic/Mutect/$(PREFIX).f1r2.tar.gz
+	$(GATK4) --java-options "-XX:ParallelGCThreads=8 -Xmx20G -Djava.io.tmpdir=$(tmp_Lib)" LearnReadOrientationModel -I $(Out_Dir)/$(PREFIX)/Somatic/Mutect/$(PREFIX).f1r2.tar.gz -O $(Out_Dir)/$(PREFIX)/Somatic/Mutect/$(PREFIX).read-orientation-model.tar.gz
+	$(GATK4) --java-options "-XX:ParallelGCThreads=8 -Xmx20G -Djava.io.tmpdir=$(tmp_Lib)" FilterMutectCalls -R $(Ref) $(mutect2_single_filter_cmd) -O $(Out_Dir)/$(PREFIX)/Somatic/Mutect/$(PREFIX).FilterMutectCalls.vcf -V $(Out_Dir)/$(PREFIX)/Somatic/Mutect/$(PREFIX).raw.vcf --contamination-table $(Out_Dir)/$(PREFIX)/Somatic/Mutect/$(PREFIX).contamination.table --tumor-segmentation $(Out_Dir)/$(PREFIX)/Somatic/Mutect/$(PREFIX).Tumor.segments.table --orientation-bias-artifact-priors $(Out_Dir)/$(PREFIX)/Somatic/Mutect/$(PREFIX).read-orientation-model.tar.gz 
+	#$(GATK4) --java-options "-XX:ParallelGCThreads=8 -Xmx20G -Djava.io.tmpdir=$(tmp_Lib)" CollectSequencingArtifactMetrics -R $(Ref) -I $(Out_Dir)/$(PREFIX)/Realign/$(PREFIX).recal.bam -O $(Out_Dir)/$(PREFIX)/Somatic/Mutect/$(PREFIX).artifact --FILE_EXTENSION ".txt"
+	#$(GATK4) --java-options "-XX:ParallelGCThreads=8 -Xmx20G -Djava.io.tmpdir=$(tmp_Lib)" FilterByOrientationBias -P $(Out_Dir)/$(PREFIX)/Somatic/Mutect/$(PREFIX).artifact.pre_adapter_detail_metrics.txt -V $(Out_Dir)/$(PREFIX)/Somatic/Mutect/$(PREFIX).FilterMutectCalls.vcf -O $(Out_Dir)/$(PREFIX)/Somatic/Mutect/$(PREFIX).FilterByOrientationBias.vcf
+	#$(GATK4) --java-options "-XX:ParallelGCThreads=8 -Xmx20G -Djava.io.tmpdir=$(tmp_Lib)" VariantFiltration $(VariantFiltration) -V $(Out_Dir)/$(PREFIX)/Somatic/Mutect/$(PREFIX).FilterByOrientationBias.vcf -O $(Out_Dir)/$(PREFIX)/Somatic/Mutect/$(PREFIX).VariantFiltration.vcf
+	#$(PYTHON3) $(BIN)/muTect2VcfSplit_S.py -s $(PREFIX) -v $(Out_Dir)/$(PREFIX)/Somatic/Mutect/$(PREFIX).VariantFiltration.vcf -o $(Out_Dir)/$(PREFIX)/Somatic/Mutect/$(PREFIX).split.vcf
+	$(PYTHON3) $(BIN)/muTect2VcfSplit_S.py -s $(PREFIX) -v $(Out_Dir)/$(PREFIX)/Somatic/Mutect/$(PREFIX).FilterMutectCalls.vcf -o $(Out_Dir)/$(PREFIX)/Somatic/Mutect/$(PREFIX).split.vcf
+	@echo Mutect TumorOnly end at `date`
+
+###20200611 done
+Varscan_Tumoronly:
+	@echo Varscan start at `date`
+	mkdir -p $(Out_Prefix)/Somatic/Varscan/
+	mkdir -p $(Out_Prefix)/Somatic/Varscan/tmp/
+	$(SAMTOOLS) mpileup $(mpileup_para_tumor) -f $(Ref) $(Out_Dir)/$(PREFIX)/Realign/$(PREFIX).recal.bam -l $(realign_599) > $(Out_Prefix)/Somatic/Varscan/$(PREFIX).mpileup
+	$(JAVA) -Djava.io.tmpdir=$(Out_Prefix)/Somatic/Varscan/tmp/ -jar $(VARSCAN) mpileup2cns $(Out_Prefix)/Somatic/Varscan/$(PREFIX).mpileup $(para_varscan) > $(Out_Prefix)/Somatic/Varscan/$(PREFIX).VarScan.raw.vcf
+	@echo Varscan end at `date`
+
+
+
+
+###20200611 done
+vcfs = $(shell for tool in $(variant_software_list);do echo  $(Out_Prefix)/Somatic/Mergevcf/$$tool.vcf ;done)
+SomaticMergevcf_Tumoronly:
+	@echo Mergevcf start at `date`
+	mkdir -p $(Out_Prefix)/Somatic/Mergevcf/
+	ln -s $(Out_Dir)/$(PREFIX)/Somatic/Mutect/$(PREFIX).split.vcf $(Out_Prefix)/Somatic/Mergevcf/MuTect2.vcf
+	ln -s $(Out_Prefix)/Somatic/Vardict/$(PREFIX).VarDict.raw.vcf $(Out_Prefix)/Somatic/Mergevcf/VarDict.vcf
+	ln -s $(Out_Prefix)/Somatic/Pindel/$(PREFIX).Pindel.raw.vcf $(Out_Prefix)/Somatic/Mergevcf/Pindel.vcf
+	ln -s $(Out_Prefix)/Somatic/Varscan/$(PREFIX).VarScan.raw.vcf $(Out_Prefix)/Somatic/Mergevcf/VarScan.vcf
+	#vcfs = $(shell for tool in $(variant_software_list);do echo  $(Out_Prefix)/Somatic/Mergevcf/$$tool.vcf ;done)
+	$(PYTHON3) $(BIN)/Mergevcf.py -v $(vcfs) -p $(variant_software_list) -o $(Out_Prefix)/Somatic/Mergevcf/all.vcf
+	rm $(Out_Prefix)/Somatic/Mergevcf/MuTect2.vcf $(Out_Prefix)/Somatic/Mergevcf/VarDict.vcf $(Out_Prefix)/Somatic/Mergevcf/Pindel.vcf $(Out_Prefix)/Somatic/Mergevcf/VarScan.vcf
+	@echo Mergevcf end at `date`
+
