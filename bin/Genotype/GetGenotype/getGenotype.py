@@ -8,9 +8,6 @@ from numpy import loadtxt
 import joblib
 import pandas as pd
 import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
-from scipy import stats
 
 def getContaminated(File):
 	concordance = 0
