@@ -1,7 +1,7 @@
 ###software
-PERL		= ${your_perl}
-PYTHON3	= ${your_python3}
-JAVA		= ${your_java}
+PERL      = ${your_perl}
+PYTHON3   = ${your_python3}
+JAVA      = ${your_java}
 
 ### Call Somatic SNV
 gatk	 = ${your_gatk3}
