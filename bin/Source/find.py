@@ -4,25 +4,17 @@ import glob
 import re
 import os
 import subprocess
-import xgboost
 from numpy import loadtxt
-from xgboost import XGBClassifier 
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import confusion_matrix
-import statsmodels.nonparametric.api as smnp
 import joblib
 import pandas as pd
 import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
-from scipy import stats
+
 '''
 该脚本用于污染源样本查询
 输入是本软件推测出的污染源基因型文件sample.pollution.genetype.xls和疑似污染源样本集的突变文件，将推测的污染源基因型和疑似污染源的样本集中的样本两两进行基因型一致性比较，大于给定的阈值，认为是污染源样本,否则不是污染源样本：
-1）计算两个样本基因型一致性时使用的位点总数为污染源基因型文件sample.pollution.genetype.xls中的总位点
-2）如果疑似污染源样本集中基因型一致性大于等于阈值0.9时，认为该样本为污染源样本
-3）如果疑似污染源样本集中的样本均小于阈值0.9时，认为污染源不包含在疑似污染源样本集
+1）计算两个样本基因型一致性时使用的位点总数为污染源基因型文件sample.pollution.change.genetype.xls中的总位点
+2）如果疑似污染源样本集中基因型一致性大于等于阈值阈值时，认为该样本为污染源样本
+3）如果疑似污染源样本集中的样本均小于阈值阈值时，认为污染源不包含在疑似污染源样本集
 '''
 
 def  merge_pollutions(pollufile,indir,site_dic,cutoff,pollutionCutoff,outdir,prefix):
