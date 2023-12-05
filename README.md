@@ -64,7 +64,7 @@ ref_2bit=${your_genome_dir}/human_g1k_v37.fasta.2bit
 realign_599=${your_file_dir}/align.bed
 realign_autoChr=${your_file_dir}/autoChr.bed
 dbsnp=${your_file_dir}/dbsnp_138.hg19.vcf
-baseline=${your_file_dir/compair.vcf
+baseline=${your_file_dir}/compair.vcf
 ```
 
 **Write Samplelist:**
