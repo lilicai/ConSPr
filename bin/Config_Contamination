@@ -12,7 +12,7 @@ conpair = ${your_conpair_dir}/Conpair
 
 ###database
 ref			    = ${your_genome_dir}/ucsc.hg19.fasta
-ref_fai		  = ${your_genome_dir}/ucsc.hg19.fasta.fai
+ref_fai     = ${your_genome_dir}/ucsc.hg19.fasta.fai
 ref_dict		= ${your_genome_dir}/ucsc.hg19.dict
 ref_2bit		= ${your_genome_dir}/ucsc.hg19.fasta.2bit
 dbsnp		  	= ${your_conf}/dbsnp_138.hg19.vcf
