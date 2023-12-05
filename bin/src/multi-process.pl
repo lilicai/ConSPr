@@ -1,20 +1,7 @@
 #!/usr/bin/perl
 
 ##  multi-process.pl -- control processes running with specified CPU number, 
-##	read command from a file, each process can have more than one orderd
-##	commands, but they should be put in the same one line, seperated by 
-##	semicolon, for example: echo hello; sleep 3; perl test.pl; 
 
-# Author: Fan Wei, fanw@genomics.org.cn
-
-## Date: 2007-1-18
-
-## 本程序的核心想法来源于李俊。
-## 注意调用fork的时候非常危险，请万勿随意修改，本程序曾把北京的大型机搞死过两次。
-
-## log
-# 1. add renohup function 
-#
 use strict;
 use Getopt::Long;
 use Data::Dumper;
