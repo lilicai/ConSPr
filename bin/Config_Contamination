@@ -4,8 +4,8 @@ PYTHON3   = ${your_python3}
 JAVA      = ${your_java}
 
 ### Call Somatic SNV
-gatk	 = ${your_gatk3}
-GATK4  = ${your_gatk4}
+gatk     = ${your_gatk3}
+GATK4    = ${your_gatk4}
 
 ### Contamination
 conpair = ${your_conpair_dir}/Conpair
